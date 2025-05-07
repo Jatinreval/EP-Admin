@@ -52,15 +52,15 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://initial-email.onrender.com/taskpane.html"/>
+        <SourceLocation DefaultValue="https://ep-admin.onrender.com/taskpane.html"/>
         <RequestedHeight>450</RequestedHeight>
       </DesktopSettings>
       <TabletSettings>
-        <SourceLocation DefaultValue="https://initial-email.onrender.com/taskpane.html"/>
+        <SourceLocation DefaultValue="https://ep-admin.onrender.com/taskpane.html"/>
         <RequestedHeight>450</RequestedHeight>
       </TabletSettings>
       <PhoneSettings>
-        <SourceLocation DefaultValue="https://initial-email.onrender.com/taskpane.html"/>
+        <SourceLocation DefaultValue="https://ep-admin.onrender.com/taskpane.html"/>
       </PhoneSettings>
     </Form>
   </FormSettings>
@@ -121,15 +121,15 @@
         <bt:Image id="Icon.80x80" DefaultValue="https://cdn-icons-png.freepik.com/256/15861/15861315.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Commands.Url" DefaultValue="https://initial-email.onrender.com/commands.html"/>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://initial-email.onrender.com/taskpane.html"/>
+        <bt:Url id="Commands.Url" DefaultValue="https://ep-admin.onrender.com/commands.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://ep-admin.onrender.com/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="Legal Email Tools"/>
         <bt:String id="TaskpaneButton.Label" DefaultValue="EP Admin"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Generate legal emails using templates for different scenarios"/>
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Generate legal emails using Azure Open AI"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
