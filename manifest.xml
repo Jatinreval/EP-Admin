@@ -12,7 +12,7 @@
   <Id>11111111-2222-3333-4444-555555555555</Id>
 
   <!-- Version is required before DisplayName according to the schema -->
-  <Version>1.0.2</Version>
+  <Version>1.0.0</Version>
   
   <!-- ProviderName is required before DisplayName according to the schema -->
   <ProviderName>EP Admin Provider</ProviderName>
@@ -24,7 +24,7 @@
   <DisplayName DefaultValue="EP Admin"/>
 
   <!-- Description is a 1-3 sentence description of what your add-in does. -->
-  <Description DefaultValue="Generate legal response emails with multiple template options for different scenarios including initial emails, conferences, and reminders."/>
+  <Description DefaultValue="Generate legal response emails Using Azure Open AI"/>
 
   <!-- Icon for your add-in. Used on installation screens and the add-ins dialog. -->
   <IconUrl DefaultValue="https://cdn-icons-png.freepik.com/256/15861/15861315.png"/>
@@ -33,7 +33,7 @@
   <!-- Domains that will be allowed when navigating. For example, if you use ShowTaskpane and then have an href link, navigation will only be allowed if the domain is on this list. -->
   <AppDomains>
     <AppDomain>https://localhost:3000</AppDomain>
-    <AppDomain>https://initial-email.vercel.app</AppDomain>
+    <AppDomain>https://ep-admin.onrender.com</AppDomain>
   </AppDomains>
 
   <!-- End Basic Settings. -->
