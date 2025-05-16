@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EP Admin</title>
+
+    <!-- Runtime Configuration for Environment Variables -->
+    <script type="text/javascript" src="/runtime-config.js"></script>
+
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+
+    <!-- For more information on Fluent UI, visit https://developer.microsoft.com/fluentui -->
+    <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/11.0.0/css/fabric.min.css"/>
+
+    <!-- Template styles -->
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        #app {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* Navigation styles to match the image */
+        .nav-container {
+            width: 100%;
+            background-color: #f8f8f8;
+            padding: 3px 1px;
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Loader styles */
+        #loader-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.6);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            padding: 20px;
+            width: auto;
+            height: auto;
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-left: 4px solid #4a6baa;
+            width: 40px;
+            height: 40px;
+            animation: spin 1.2s linear infinite;
+            margin-bottom: 15px;
+        }
+        
+        .loader-text {
+            color: #4a6baa;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .dropdown-container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-btn {
+            background-color: transparent;
+            color: #4a6baa;
+            padding: 5px 0;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .dropdown-btn::after {
+            content: "▼";
+            font-size: 10px;
+            margin-left: 5px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 250px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+            z-index: 1;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+            border: 1px solid #e0e0e0;
+            left: 0;
+        }
+        
+        /* Add arrow indicator to dropdown menus */
+        .dropdown-content::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid #fff;
+            z-index: 2;
+        }
+        
+        .dropdown-content::after {
+            content: "";
+            position: absolute;
+            top: -11px;
+            left: 20px;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid #e0e0e0;
+            z-index: 1;
+        }
+        
+        /* Position the "Reminders" dropdown on the right side */
+        .dropdown:nth-child(2) .dropdown-content {
+            right: 0;
+            left: auto;
+        }
+        
+        /* Adjust the indicator position for the "Reminders" dropdown */
+        .dropdown:nth-child(2) .dropdown-content::before {
+            left: auto;
+            right: 20px;
+        }
+        
+        .dropdown:nth-child(2) .dropdown-content::after {
+            left: auto;
+            right: 20px;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.2s;
+            font-size: 14px;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f5f5f5;
+        }
+
+        .dropdown.open .dropdown-content {
+            display: block;
+        }
+        
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+            padding: 0 0px;
+        }
+        
+        .ms-Button {
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+            border: 1px solid #0078d4;
+            background-color: #0078d4;
+            color: white;
+            font-weight: 600;
+            padding: 0 16px;
+            min-width: 80px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.1s ease-in-out;
+        }
+        
+        .ms-Button:hover {
+            background-color: #106ebe;
+        }
+        
+        .ms-Button:active {
+            background-color: #005a9e;
+        }
+        
+        #status {
+            margin: 15px 0;
+            min-height: 32px;
+            text-align: center;
+            padding: 0 20px;
+        }
+        
+        .response-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 200px;
+            max-height: 400px;
+            margin-bottom: 80px;
+            width: calc(100% - 40px);
+            margin-left: auto;
+            margin-right: auto;
+            box-sizing: border-box;
+        }
+        
+        #response-container {
+            flex: 1;
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: none;
+            white-space: pre-wrap;
+            font-family: "Segoe UI", sans-serif;
+            line-height: 1.5;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            box-sizing: border-box;
+            text-align: left;
+            cursor: text;
+            user-select: text;
+        }
+        
+        #response-container strong {
+            font-weight: 600;
+            display: block;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .action-buttons {
+            position: absolute;
+            bottom: -60px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding-bottom: 20px;
+        }
+        
+        #copy-button {
+            display: none;
+        }
+        
+        #reply-button {
+            display: inline-block;
+        }
+
+        /* Task content sections */
+        .task-section {
+            display: none;
+            width: 100%;
+            padding: 0 0px;
+        }
+
+        .task-section.active {
+            display: block;
+        }
+        
+        h3 {
+            justify-content: center;
+            margin-top: 15px;
+            color: #333;
+            text-align: center;
+        }
+        
+        .reminder-status, .draft-status, .signing-status {
+            margin: 15px 0;
+            min-height: 20px;
+            text-align: center;
+        }
+
+        .response-container {
+            flex: 1;
+            width: 100%;
+            border: 1px solid #ccc;
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: none;
+            white-space: pre-wrap;
+            font-family: "Segoe UI", sans-serif;
+            line-height: 1.5;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            box-sizing: border-box;
+            text-align: left;
+            cursor: text;
+            user-select: text;
+        }
+    </style>
+</head>
+
+<body class="ms-font-m ms-Fabric">
+    <div id="app">
+        <!-- Navigation Bar with Dropdowns styled to match image -->
+        <div class="nav-container">
+            <div class="dropdown-container">
+                <div class="dropdown">
+                    <button class="dropdown-btn">Sending Times</button>
+                    <div class="dropdown-content">
+                        <a href="#" data-task="initial-email">Initial Email</a>
+                        <a href="#" data-task="conference-draft">Conference for Draft Documents</a>
+                        <a href="#" data-task="conference-signing">Conference for Signing Documents</a>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="dropdown-btn">Reminders</button>
+                    <div class="dropdown-content">
+                        <a href="#" data-task="reminder-initial">Reminder re Initial Email</a>
+                        <a href="#" data-task="reminder-further">Reminder re Further Information</a>
+                        <a href="#" data-task="reminder-draft">Reminder re Conference for Draft Documents</a>
+                        <a href="#" data-task="reminder-signing">Reminder re Conference for Signing Documents</a>
+                        <a href="#" data-task="reminder-attorney">Reminder to Attorney / Guardian</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loader Animation (Hidden by default) -->
+        <div id="loader-container" style="display: none;">
+            <div class="loader"></div>
+            <div class="loader-text">Loading...</div>
+        </div>
+        
+        <!-- Initial Email Section (Current AI Generator) -->
+        <div id="initial-email" class="task-section active">
+            <h3>Initial Email</h3>
+        <div class="button-container">
+            <button id="save-button" class="ms-Button" style="display: none;">
+                <span class="ms-Button-label">Save Email as JSON</span>
+            </button>
+            <button id="openai-button" class="ms-Button">
+                <span class="ms-Button-label">Generate AI Response</span>
+            </button>
+            <button id="reply-button" class="ms-Button">
+                <span class="ms-Button-label">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                        <path d="M5.921 11.9 1.353 8.62a.719.719 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z"/>
+                        <path d="M10.921 11.9 6.353 8.62a.719.719 0 0 1 0-1.238L10.921 4.1A.716.716 0 0 1 12 4.719V6c1.5 0 3 0.5 3.5 4-1-2-2.5-2-3.5-2v1.281c0 .56-.606.898-1.079.62z"/>
+                    </svg>
+                    Reply with Response
+                </span>
+            </button>
+        </div>
+        <div id="status"></div>
+        <div class="response-wrapper">
+            <div id="response-container"></div>
+            <div class="action-buttons">
+                <button id="copy-button" class="ms-Button">
+                    <span class="ms-Button-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                        </svg>
+                        Copy Response
+                    </span>
+                </button>
+            </div>
+            </div>
+        </div>
+        
+        <!-- Conference for Draft Documents Section -->
+        <div id="conference-draft" class="task-section">
+            <h3>Conference for Draft Documents</h3>
+            <div class="button-container">
+                <button id="draft-generate" class="ms-Button">
+                    <span class="ms-Button-label">Generate AI Response</span>
+                </button>
+                <button id="draft-reply-button" class="ms-Button reply-button" style="display: none;">
+                    <span class="ms-Button-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                            <path d="M5.921 11.9 1.353 8.62a.719.719 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z"/>
+                            <path d="M10.921 11.9 6.353 8.62a.719.719 0 0 1 0-1.238L10.921 4.1A.716.716 0 0 1 12 4.719V6c1.5 0 3 0.5 3.5 4-1-2-2.5-2-3.5-2v1.281c0 .56-.606.898-1.079.62z"/>
+                        </svg>
+                        Reply with Response
+                    </span>
+                </button>
+            </div>
+            <div class="draft-status"></div>
+            <div class="response-wrapper">
+                <div id="draft-response-container" class="response-container"></div>
+                <div class="action-buttons">
+                    <button id="draft-copy-button" class="ms-Button copy-button" style="display: none;">
+                        <span class="ms-Button-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                            </svg>
+                            Copy Response
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Conference for Signing Documents Section -->
+        <div id="conference-signing" class="task-section">
+            <h3>Conference for Signing Documents</h3>
+            <div class="button-container">
+                <button id="signing-generate" class="ms-Button">
+                    <span class="ms-Button-label">Generate AI Response</span>
+                </button>
+                <button id="signing-reply-button" class="ms-Button reply-button" style="display: none;">
+                    <span class="ms-Button-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                            <path d="M5.921 11.9 1.353 8.62a.719.719 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z"/>
+                            <path d="M10.921 11.9 6.353 8.62a.719.719 0 0 1 0-1.238L10.921 4.1A.716.716 0 0 1 12 4.719V6c1.5 0 3 0.5 3.5 4-1-2-2.5-2-3.5-2v1.281c0 .56-.606.898-1.079.62z"/>
+                        </svg>
+                        Reply with Response
+                    </span>
+                </button>
+            </div>
+            <div class="conference-status"></div>
+            <div class="response-wrapper">
+                <div id="conference-signing-response-container" class="response-container"></div>
+                <div class="action-buttons">
+                    <button id="conference-signing-copy-button" class="ms-Button copy-button" style="display: none;">
+                        <span class="ms-Button-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                            </svg>
+                            Copy Response
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Reminder Sections -->
+        <div id="reminder-initial" class="task-section">
+            <h3>Reminder re Initial Email</h3>
+            <div class="button-container">
+                <button id="reminder-initial-generate" class="ms-Button">
+                    <span class="ms-Button-label">Generate AI Response</span>
+                </button>
+                <button id="reminder-initial-reply-button" class="ms-Button reply-button" style="display: none;">
+                    <span class="ms-Button-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                            <path d="M5.921 11.9 1.353 8.62a.719.719 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z"/>
+                            <path d="M10.921 11.9 6.353 8.62a.719.719 0 0 1 0-1.238L10.921 4.1A.716.716 0 0 1 12 4.719V6c1.5 0 3 0.5 3.5 4-1-2-2.5-2-3.5-2v1.281c0 .56-.606.898-1.079.62z"/>
+                        </svg>
+                        Reply with Response
+                    </span>
+                </button>
+            </div>
+            <div class="reminder-status"></div>
+            <div class="response-wrapper">
+                <div id="reminder-initial-response-container" class="response-container"></div>
+                <div class="action-buttons">
+                    <button id="reminder-initial-copy-button" class="ms-Button copy-button" style="display: none;">
+                        <span class="ms-Button-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                            </svg>
+                            Copy Response
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="reminder-further" class="task-section">
+            <h3>Reminder re Further Information</h3>
+            <div class="button-container">
+                <button id="reminder-further-generate" class="ms-Button">
+                    <span class="ms-Button-label">Generate AI Response</span>
+                </button>
+                <button id="reminder-further-reply-button" class="ms-Button reply-button" style="display: none;">
+                    <span class="ms-Button-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                            <path d="M5.921 11.9 1.353 8.62a.719.719 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z"/>
+                            <path d="M10.921 11.9 6.353 8.62a.719.719 0 0 1 0-1.238L10.921 4.1A.716.716 0 0 1 12 4.719V6c1.5 0 3 0.5 3.5 4-1-2-2.5-2-3.5-2v1.281c0 .56-.606.898-1.079.62z"/>
+                        </svg>
+                        Reply with Response
+                    </span>
+                </button>
+            </div>
+            <div class="reminder-status"></div>
+            <div class="response-wrapper">
+                <div id="reminder-further-response-container" class="response-container"></div>
+                <div class="action-buttons">
+                    <button id="reminder-further-copy-button" class="ms-Button copy-button" style="display: none;">
+                        <span class="ms-Button-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                            </svg>
+                            Copy Response
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="reminder-draft" class="task-section">
+            <h3>Reminder re Conference for Draft Documents</h3>
+            <div class="button-container">
+                <button id="reminder-draft-generate" class="ms-Button">
+                    <span class="ms-Button-label">Generate AI Response</span>
+                </button>
+                <button id="reminder-draft-reply-button" class="ms-Button reply-button" style="display: none;">
+                    <span class="ms-Button-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                            <path d="M5.921 11.9 1.353 8.62a.719.719 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z"/>
+                            <path d="M10.921 11.9 6.353 8.62a.719.719 0 0 1 0-1.238L10.921 4.1A.716.716 0 0 1 12 4.719V6c1.5 0 3 0.5 3.5 4-1-2-2.5-2-3.5-2v1.281c0 .56-.606.898-1.079.62z"/>
+                        </svg>
+                        Reply with Response
+                    </span>
+                </button>
+            </div>
+            <div class="reminder-status"></div>
+            <div class="response-wrapper">
+                <div id="reminder-draft-response-container" class="response-container"></div>
+                <div class="action-buttons">
+                    <button id="reminder-draft-copy-button" class="ms-Button copy-button" style="display: none;">
+                        <span class="ms-Button-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                            </svg>
+                            Copy Response
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="reminder-signing" class="task-section">
+            <h3>Reminder re Conference for Signing Documents</h3>
+            <div class="button-container">
+                <button id="reminder-signing-generate" class="ms-Button">
+                    <span class="ms-Button-label">Generate AI Response</span>
+                </button>
+                <button id="reminder-signing-reply-button" class="ms-Button reply-button" style="display: none;">
+                    <span class="ms-Button-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                            <path d="M5.921 11.9 1.353 8.62a.719.719 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z"/>
+                            <path d="M10.921 11.9 6.353 8.62a.719.719 0 0 1 0-1.238L10.921 4.1A.716.716 0 0 1 12 4.719V6c1.5 0 3 0.5 3.5 4-1-2-2.5-2-3.5-2v1.281c0 .56-.606.898-1.079.62z"/>
+                        </svg>
+                        Reply with Response
+                    </span>
+                </button>
+            </div>
+            <div class="reminder-status"></div>
+            <div class="response-wrapper">
+                <div id="reminder-signing-response-container" class="response-container"></div>
+                <div class="action-buttons">
+                    <button id="reminder-signing-copy-button" class="ms-Button copy-button" style="display: none;">
+                        <span class="ms-Button-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                            </svg>
+                            Copy Response
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="reminder-attorney" class="task-section">
+            <h3>Reminder to Attorney / Guardian</h3>
+            <div class="button-container">
+                <button id="reminder-attorney-generate" class="ms-Button">
+                    <span class="ms-Button-label">Generate AI Response</span>
+                </button>
+                <button id="reminder-attorney-reply-button" class="ms-Button reply-button" style="display: none;">
+                    <span class="ms-Button-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                            <path d="M5.921 11.9 1.353 8.62a.719.719 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z"/>
+                            <path d="M10.921 11.9 6.353 8.62a.719.719 0 0 1 0-1.238L10.921 4.1A.716.716 0 0 1 12 4.719V6c1.5 0 3 0.5 3.5 4-1-2-2.5-2-3.5-2v1.281c0 .56-.606.898-1.079.62z"/>
+                        </svg>
+                        Reply with Response
+                    </span>
+                </button>
+            </div>
+            <div class="reminder-status"></div>
+            <div class="response-wrapper">
+                <div id="reminder-attorney-response-container" class="response-container"></div>
+                <div class="action-buttons">
+                    <button id="reminder-attorney-copy-button" class="ms-Button copy-button" style="display: none;">
+                        <span class="ms-Button-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 6px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                            </svg>
+                            Copy Response
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Function to copy text from a response container
+        function setupCopyButtons() {
+            // Get all copy buttons
+            document.querySelectorAll('.copy-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Find the corresponding response container
+                    const containerId = this.id.replace('-copy-button', '-response-container');
+                    const responseContainer = document.getElementById(containerId);
+                    
+                    if (!responseContainer) {
+                        console.error('Response container not found:', containerId);
+                        return;
+                    }
+                    
+                    const responseText = responseContainer.innerText;
+                    
+                    // Make the text easily selectable
+                    responseContainer.style.userSelect = 'all';
+                    
+                    // Create a fallback method using execCommand which has better compatibility
+                    try {
+                        // Create a temporary textarea element
+                        const textarea = document.createElement('textarea');
+                        textarea.value = responseText;
+                        
+                        // Make the textarea non-editable to avoid focus and ensure it's not visible
+                        textarea.setAttribute('readonly', '');
+                        textarea.style.position = 'absolute';
+                        textarea.style.left = '-9999px';
+                        
+                        // Append the textarea to the document
+                        document.body.appendChild(textarea);
+                        
+                        // Select the text in the textarea
+                        textarea.select();
+                        
+                        // Execute the copy command
+                        const successful = document.execCommand('copy');
+                        
+                        // Remove the temporary textarea
+                        document.body.removeChild(textarea);
+                        
+                        if (successful) {
+                            // Find nearest status container
+                            const statusContainer = this.closest('.task-section').querySelector('.draft-status, .signing-status, .reminder-status, #status');
+                            if (statusContainer) {
+                                statusContainer.innerText = "Response copied to clipboard!";
+                            }
+                        } else {
+                            throw new Error('Copy command failed');
+                        }
+                    } catch (err) {
+                        // Try using the modern Clipboard API as fallback
+                        if (navigator.clipboard) {
+                            navigator.clipboard.writeText(responseText)
+                                .then(() => {
+                                    const statusContainer = this.closest('.task-section').querySelector('.draft-status, .signing-status, .reminder-status, #status');
+                                    if (statusContainer) {
+                                        statusContainer.innerText = "Response copied to clipboard!";
+                                    }
+                                })
+                                .catch(clipboardErr => {
+                                    const statusContainer = this.closest('.task-section').querySelector('.draft-status, .signing-status, .reminder-status, #status');
+                                    if (statusContainer) {
+                                        statusContainer.innerText = "Please select the text manually and copy.";
+                                    }
+                                    console.error("Clipboard error:", clipboardErr);
+                                });
+                        } else {
+                            const statusContainer = this.closest('.task-section').querySelector('.draft-status, .signing-status, .reminder-status, #status');
+                            if (statusContainer) {
+                                statusContainer.innerText = "Please select the text manually and copy.";
+                            }
+                            console.error("Copy error:", err);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Add reply functionality for all reply buttons
+        function setupReplyButtons() {
+            document.querySelectorAll('.reply-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Find the corresponding response container
+                    const containerId = this.id.replace('-reply-button', '-response-container');
+                    const responseContainer = document.getElementById(containerId);
+                    
+                    if (!responseContainer) {
+                        console.error('Response container not found:', containerId);
+                        return;
+                    }
+                    
+                    const responseText = responseContainer.innerText;
+                    
+                    if (!responseText) {
+                        const statusContainer = this.closest('.task-section').querySelector('.draft-status, .signing-status, .reminder-status, #status');
+                        if (statusContainer) {
+                            statusContainer.innerText = "No response to reply with. Please generate a response first.";
+                        }
+                        return;
+                    }
+                    
+                    try {
+                        Office.context.mailbox.item.displayReplyAllForm(responseText);
+                        const statusContainer = this.closest('.task-section').querySelector('.draft-status, .signing-status, .reminder-status, #status');
+                        if (statusContainer) {
+                            statusContainer.innerText = "Reply created with the generated response!";
+                        }
+                    } catch (error) {
+                        const statusContainer = this.closest('.task-section').querySelector('.draft-status, .signing-status, .reminder-status, #status');
+                        if (statusContainer) {
+                            statusContainer.innerText = `Error creating reply: ${error.message}`;
+                        }
+                        console.error("Reply error:", error);
+                    }
+                });
+            });
+        }
+
+        // Setup copy and reply buttons when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            setupCopyButtons();
+            setupReplyButtons();
+            
+            // Process the original copy button for backward compatibility
+        document.getElementById('copy-button').addEventListener('click', function() {
+            const responseContainer = document.getElementById('response-container');
+            const responseText = responseContainer.innerText;
+            
+            // Make the text easily selectable
+            responseContainer.style.userSelect = 'all';
+            
+            // Create a fallback method using execCommand which has better compatibility
+            try {
+                // Create a temporary textarea element
+                const textarea = document.createElement('textarea');
+                textarea.value = responseText;
+                
+                // Make the textarea non-editable to avoid focus and ensure it's not visible
+                textarea.setAttribute('readonly', '');
+                textarea.style.position = 'absolute';
+                textarea.style.left = '-9999px';
+                
+                // Append the textarea to the document
+                document.body.appendChild(textarea);
+                
+                // Select the text in the textarea
+                textarea.select();
+                
+                // Execute the copy command
+                const successful = document.execCommand('copy');
+                
+                // Remove the temporary textarea
+                document.body.removeChild(textarea);
+                
+                if (successful) {
+                    document.getElementById('status').innerText = "Response copied to clipboard!";
+                } else {
+                    throw new Error('Copy command failed');
+                }
+            } catch (err) {
+                // Try using the modern Clipboard API as fallback
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(responseText)
+                        .then(() => {
+                            document.getElementById('status').innerText = "Response copied to clipboard!";
+                        })
+                        .catch(clipboardErr => {
+                            document.getElementById('status').innerText = "Please select the text manually (click and Ctrl+A) and copy (Ctrl+C).";
+                            console.error("Clipboard error:", clipboardErr);
+                        });
+                } else {
+                    document.getElementById('status').innerText = "Please select the text manually (click and Ctrl+A) and copy (Ctrl+C).";
+                    console.error("Copy error:", err);
+                }
+            }
+            });
+            
+            // Improved dropdown behavior
+            // Get all dropdown buttons
+            const dropdownBtns = document.querySelectorAll('.dropdown-btn');
+            const dropdowns = document.querySelectorAll('.dropdown');
+            
+            // Add click event to each dropdown button
+            dropdownBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Get the parent dropdown container
+                    const dropdown = this.parentElement;
+                    
+                    // Check if this dropdown is currently open
+                    const isOpen = dropdown.classList.contains('open');
+                    
+                    // Close all dropdowns first
+                    document.querySelectorAll('.dropdown').forEach(d => {
+                        d.classList.remove('open');
+                    });
+                    
+                    // If it wasn't open before, open it now
+                    if (!isOpen) {
+                        dropdown.classList.add('open');
+                    }
+                });
+            });
+            
+            // Add hover event to each dropdown for switching between them
+            dropdowns.forEach(dropdown => {
+                dropdown.addEventListener('mouseenter', function() {
+                    // Only act if any dropdown is currently open
+                    const anyDropdownOpen = document.querySelector('.dropdown.open');
+                    if (anyDropdownOpen) {
+                        // Close all dropdowns
+                        document.querySelectorAll('.dropdown').forEach(d => {
+                            d.classList.remove('open');
+                        });
+                        
+                        // Open this dropdown
+                        this.classList.add('open');
+                    }
+                });
+            });
+            
+            // Add click event to each dropdown item
+            document.querySelectorAll('.dropdown-content a').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Don't close the dropdown immediately when clicking links
+                    e.stopPropagation();
+                    
+                    // But do close it after the link action is handled
+                    setTimeout(() => {
+                        document.querySelectorAll('.dropdown').forEach(d => {
+                            d.classList.remove('open');
+                        });
+                    }, 100);
+                });
+            });
+            
+            // Close dropdown when clicking anywhere else on the page
+            document.addEventListener('click', function() {
+                document.querySelectorAll('.dropdown').forEach(d => {
+                    d.classList.remove('open');
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
