@@ -21,7 +21,7 @@
   <DefaultLocale>en-US</DefaultLocale>
 
   <!-- DisplayName is the name that will appear in the Office Store and in the Office UI. -->
-  <DisplayName DefaultValue="EP Admin"/>
+  <DisplayName DefaultValue="EP Admin Dev"/>
 
   <!-- Description is a 1-3 sentence description of what your add-in does. -->
   <Description DefaultValue="Generate legal response emails with multiple template options for different scenarios including initial emails, conferences, and reminders."/>
